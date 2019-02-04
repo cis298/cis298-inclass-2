@@ -1,13 +1,18 @@
 package edu.kvcc.cis298.geoquiz;
 
+import android.os.PersistableBundle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class QuizActivity extends AppCompatActivity {
+
+    private static final String TAG = "QuizActivity";
+    private static final String KEY_INDEX = "index";
 
     private Button mTrueButton;
     private Button mFalseButton;
@@ -33,10 +38,20 @@ public class QuizActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Log out that onCreate was called
+        Log.d(TAG, "onCreate(Bundle) called");
         // Run the parent work
         super.onCreate(savedInstanceState);
         // Set the view for this activity to the activity_quiz layout
         setContentView(R.layout.activity_quiz);
+
+        // Check to see if there is a savedInstanceState that was passed
+        // into this onCreate method. If so, get the current question
+        // index from the savedInstanceState and use it t set
+        // the current index.
+        if (savedInstanceState != null) {
+            mCurrentIndex = savedInstanceState.getInt(KEY_INDEX, 0);
+        }
 
         // Get a reference to the question textview
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
@@ -72,6 +87,57 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Log out that onStart was called
+        Log.d(TAG, "onStart() called");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        // Log out that onStop was called
+        Log.d(TAG, "onStop() called");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Log out that onDestroy was called
+        Log.d(TAG, "onDestroy() called");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Log out that onPause was called
+        Log.d(TAG, "onPause() called");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Log out that onResume was called
+        Log.d(TAG, "onResume() called");
+    }
+
+    // This is an override method that we use to save any information
+    // that we need to retain during screen rotation. When the app
+    // enters the paused state, this method will fire. We can store
+    // data into the Bundle object that it gets. Then pull that data
+    // back out in the onCreate method.
+    // The method has methods that are type specific. So, here we
+    // are using putInt to put an integer. There are other put methods
+    // for the other types.
+    @Override
+    public void onSaveInstanceState(Bundle savedInstanceState) {
+        super.onSaveInstanceState(savedInstanceState);
+        Log.i(TAG, "onSaveInstanceState called");
+        savedInstanceState.putInt(KEY_INDEX, mCurrentIndex);
     }
 
     private void updateQuestion() {
