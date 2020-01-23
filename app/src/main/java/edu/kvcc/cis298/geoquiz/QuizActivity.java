@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,10 +16,19 @@ public class QuizActivity extends AppCompatActivity {
     private static final String TAG = "QuizActivity";
     private static final String KEY_INDEX = "index";
 
-    private Button mTrueButton;
-    private Button mFalseButton;
+    // For submission of answer.
+    private Button mSubmitButton;
+    // To move to next qustion.
     private Button mNextButton;
+    // For question text.
     private TextView mQuestionTextView;
+    // For fetching selected answer
+    private RadioGroup mQuestionGroup;
+    // For setting choice text of each choice
+    private RadioButton mChoice1;
+    private RadioButton mChoice2;
+    private RadioButton mChoice3;
+    private RadioButton mChoice4;
 
     // Define an array of the questions for the app
     // Each instance of question will store the integer from
@@ -25,12 +36,26 @@ public class QuizActivity extends AppCompatActivity {
     // the questions string as a string, but instead the resource
     // identifier for the string in strings.xml and R.
     private Question[] mQuestionBank = new Question[] {
-            new Question(R.string.question_australia, true),
-            new Question(R.string.question_oceans, true),
-            new Question(R.string.question_mideast, false),
-            new Question(R.string.question_africa, false),
-            new Question(R.string.question_americas, true),
-            new Question(R.string.question_asia, true)
+            new Question(
+                    R.string.question_1_multiple, // Question Text
+                    R.id.multiple_choice_3, // Question Correct Radio Button Id
+                    new int[] {
+                            R.string.question_1_choice_1, // Each Radio Button Text
+                            R.string.question_1_choice_2,
+                            R.string.question_1_choice_3,
+                            R.string.question_1_choice_4
+                    }
+            ),
+            new Question(
+                    R.string.question_2_multiple, // Question Text
+                    R.id.multiple_choice_2, // Question Correct Radio Button Id
+                    new int[] {
+                            R.string.question_2_choice_1, // Each Radio Button Text
+                            R.string.question_2_choice_2,
+                            R.string.question_2_choice_3,
+                            R.string.question_2_choice_4
+                    }
+            )
     };
 
     // A variable to keep track of what question we are on.
@@ -55,25 +80,27 @@ public class QuizActivity extends AppCompatActivity {
 
         // Get a reference to the question textview
         mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
-        // Call the updateQuestion method to move to the next question
-        updateQuestion();
 
+        // Get a reference to the QuestionGroup
+        mQuestionGroup = (RadioGroup) findViewById(R.id.multiple_group);
+        // Get references to each of the radio buttons
+        mChoice1 = (RadioButton) findViewById(R.id.multiple_choice_1);
+        mChoice2 = (RadioButton) findViewById(R.id.multiple_choice_2);
+        mChoice3 = (RadioButton) findViewById(R.id.multiple_choice_3);
+        mChoice4 = (RadioButton) findViewById(R.id.multiple_choice_4);
 
-        // Get a reference to the true button from the layout.
-        mTrueButton = (Button) findViewById(R.id.true_button);
-        // Setup and onclick listener for the true button.
-        mTrueButton.setOnClickListener(new View.OnClickListener() {
+        mSubmitButton = (Button) findViewById(R.id.submit_button);
+        mSubmitButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                checkAnswer(true);
-            }
-        });
+            public void onClick(View view) {
+                // Query the radio button group to find out which radio button
+                // was selected. Store the id of the selected one in the
+                // variable selectedAnswerId.
+                int selectedAnswerId = mQuestionGroup.getCheckedRadioButtonId();
 
-        mFalseButton = (Button) findViewById(R.id.false_button);
-        mFalseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                checkAnswer(false);
+                // Pass the id of the selected radio button into the checkAnswer
+                // method. The checkAnswer handles toasting whether it is correct or not.
+                checkAnswer(selectedAnswerId);
             }
         });
 
@@ -86,6 +113,9 @@ public class QuizActivity extends AppCompatActivity {
                 updateQuestion();
             }
         });
+
+        // Call the updateQuestion method to move to the next question
+        updateQuestion();
 
     }
 
@@ -145,19 +175,31 @@ public class QuizActivity extends AppCompatActivity {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
         // Set the text for the textview to the resId of the question.
         mQuestionTextView.setText(question);
+        // Fetch the question choice text from the question object
+        int[] choices = mQuestionBank[mCurrentIndex].getChoiceResIds();
+        // Assign each question choice text to the text property of the radio button.
+        mChoice1.setText(choices[0]);
+        mChoice2.setText(choices[1]);
+        mChoice3.setText(choices[2]);
+        mChoice4.setText(choices[3]);
     }
 
-    private void checkAnswer(boolean userPressedTrue) {
-        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+    private void checkAnswer(int selectedRadioButtonId) {
 
+        // Get the correct answer res id from the question object
+        int correctAnswer = mQuestionBank[mCurrentIndex].getCorrectAnswerResId();
+
+        // Initialize the message res id to zero. Will be overwritten below.
         int messageResId = 0;
 
-        if (userPressedTrue == answerIsTrue) {
+        // Check to see if the selected Radio button id matches the correct answer.
+        if (selectedRadioButtonId == correctAnswer) {
             messageResId = R.string.correct_toast;
         } else {
             messageResId = R.string.incorrect_toast;
         }
 
+        // Toast out the result
         Toast.makeText(
                 this,
                 messageResId,
